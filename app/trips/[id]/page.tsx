@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import Uploader from './uploader';
 
 type Trip = {
   id: string;
@@ -48,6 +49,8 @@ export default function TripPage({ params }: { params: { id: string }}) {
         <h2>{trip.title}</h2>
         <div>{trip.start_date} → {trip.end_date} · {trip.location_city || ''}{trip.location_city && trip.location_country ? ', ' : ''}{trip.location_country || ''}</div>
         <h3 style={{ marginTop: 20 }}>Flights</h3>
+        <h3 style={{ marginTop: 20 }}>Documents</h3>
+<Uploader tripId={trip.id} />
         <TripFlights tripId={trip.id} />
       </div>
       <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12 }}>
