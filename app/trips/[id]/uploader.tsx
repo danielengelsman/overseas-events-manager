@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { supabase } from '../../../lib/supabaseClient'; // ← TOP-LEVEL import
 
 export default function Uploader({ tripId }: { tripId: string }) {
   const [file, setFile] = useState<File | null>(null);
@@ -11,30 +12,24 @@ export default function Uploader({ tripId }: { tripId: string }) {
     const res = await fetch('/api/upload-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileName: file.name, contentType: file.type })
+      body: JSON.stringify({ fileName: file.name }) // contentType not needed
     });
-    import { supabase } from '@/lib/supabaseClient'; // (top of file)
+    const { path, token, error } = await res.json();
+    if (error) { setStatus('Error: ' + error); return; }
 
-...
+    setStatus('Uploading...');
+    const { error: upErr } = await supabase
+      .storage
+      .from('documents')
+      .uploadToSignedUrl(path, token, file, { upsert: false });
 
-const { path, token } = await res.json();        // from our API route
-setStatus('Uploading...');
-const { error } = await supabase
-  .storage
-  .from('documents')
-  .uploadToSignedUrl(path, token, file, { upsert: false }); // content type inferred
-
-if (error) {
-  setStatus('Upload failed: ' + error.message);
-  return;
-}
-setStatus('Uploaded! (parsing not implemented in starter)');
-
+    if (upErr) { setStatus('Upload failed: ' + upErr.message); return; }
+    setStatus('Uploaded! (parsing not implemented in starter)');
   }
 
   return (
     <div>
-      <input type="file" onChange={e=>setFile(e.target.files?.[0] || null)} />
+      <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
       <button onClick={upload} disabled={!file}>Upload</button>
       <div>{status}</div>
     </div>
