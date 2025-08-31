@@ -13,11 +13,23 @@ export default function Uploader({ tripId }: { tripId: string }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fileName: file.name, contentType: file.type })
     });
-    const { signedUrl } = await res.json();
-    setStatus('Uploading...');
-    const put = await fetch(signedUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
-    if (!put.ok) { setStatus('Upload failed'); return; }
-    setStatus('Uploaded! (parsing not implemented in starter)');
+    import { supabase } from '@/lib/supabaseClient'; // (top of file)
+
+...
+
+const { path, token } = await res.json();        // from our API route
+setStatus('Uploading...');
+const { error } = await supabase
+  .storage
+  .from('documents')
+  .uploadToSignedUrl(path, token, file, { upsert: false }); // content type inferred
+
+if (error) {
+  setStatus('Upload failed: ' + error.message);
+  return;
+}
+setStatus('Uploaded! (parsing not implemented in starter)');
+
   }
 
   return (
