@@ -46,6 +46,7 @@ export default function Home() {
       <p>Signed in as <strong>{user.email}</strong></p>
       <div style={{ display: 'flex', gap: 8 }}>
         <Link href="/trips">Go to Trips</Link>
+        <Link href="/dashboard">Dashboard</Link>
         <button onClick={signOut}>Sign out</button>
       </div>
     </div>
